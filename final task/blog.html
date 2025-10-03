@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Blog</title>
+  <meta name="description" content="Small client-side blog with search and read modal">
+  <style>
+    :root{--bg:#fff;--card:#f8fbfa;--accent:#0b6b63;--muted:#6b6b6b}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#f6fbf9,#fff);color:#062a27}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px;max-width:1100px;margin:0 auto}
+    header h1{font-size:20px;margin:0}
+    nav a{margin-left:10px;color:var(--accent);text-decoration:none;font-weight:600}
+    .wrap{max-width:1100px;margin:16px auto;padding:0 16px}
+    .search{display:flex;gap:8px;margin-bottom:12px}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .post{background:white;border-radius:10px;padding:12px;box-shadow:0 6px 16px rgba(10,40,40,0.05);display:flex;flex-direction:column}
+    .post img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    .read{background:var(--accent);color:white;padding:8px 10px;border-radius:8px;text-decoration:none;cursor:pointer}
+    /* modal */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;padding:16px}
+    .modal .content{background:white;max-width:700px;width:100%;border-radius:10px;padding:20px;max-height:80vh;overflow:auto}
+    .modal h2{margin-top:0}
+    .close{float:right;cursor:pointer;color:var(--accent);font-weight:700}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mini Blog</h1>
+    <nav>
+      <a href="index.html">Hub</a>
+      <a href="ecommerce.html">E-Commerce</a>
+      <a href="portfolio.html">Portfolio</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <div class="search">
+      <input id="search" placeholder="Search posts..." style="flex:1;padding:8px;border:1px solid #ccc;border-radius:8px" />
+    </div>
+    <div id="posts" class="cards" aria-live="polite"></div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="content">
+      <span id="closeModal" class="close">X</span>
+      <h2 id="modalTitle"></h2>
+      <p id="modalBody" style="line-height:1.6;color:#333"></p>
+    </div>
+  </div>
+
+  <script defer>
+    const POSTS = [
+      {id:1,title:"Getting Started with Web Dev",img:"https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=60",excerpt:"Learn the basics of HTML, CSS, and JS to start building websites.",body:"This article explains how to begin your web development journey. Start with HTML for structure, CSS for styling, and JavaScript for interactivity. Practice small projects and gradually build more complex apps."},
+      {id:2,title:"Tips for Responsive Design",img:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=60",excerpt:"Make your site look good on any device with these strategies.",body:"Responsive design ensures your website adapts to all screen sizes. Use flexible layouts, media queries, and relative units. Test frequently on different devices and browsers to guarantee compatibility."},
+      {id:3,title:"Optimizing Performance",img:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=60",excerpt:"Faster websites keep users happy and engaged.",body:"Performance optimization involves reducing image sizes, lazy loading assets, minimizing CSS and JavaScript, and leveraging browser caching. Always measure performance using tools like Lighthouse."},
+      {id:4,title:"Why Accessibility Matters",img:"https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=60",excerpt:"Accessible websites are usable by everyone.",body:"Accessibility is about creating inclusive experiences. Use semantic HTML, provide alt text, ensure contrast, and support keyboard navigation to make your site usable by all."}
+    ];
+
+    const postsEl = document.getElementById('posts');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    function renderPosts(items){
+      postsEl.innerHTML='';
+      const frag=document.createDocumentFragment();
+      items.forEach(p=>{
+        const card=document.createElement('article');
+        card.className='post';
+        card.innerHTML=`
+          <img src="${p.img}" loading="lazy" alt="${p.title}">
+          <h3>${p.title}</h3>
+          <p style="color:#666">${p.excerpt}</p>
+          <div class="meta">
+            <span style="font-size:13px;color:#999">Read time: 2 min</span>
+            <button class="read" data-id="${p.id}">Read More</button>
+          </div>
+        `;
+        frag.appendChild(card);
+      });
+      postsEl.appendChild(frag);
+      document.querySelectorAll('.read').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const post=POSTS.find(x=>x.id==btn.dataset.id);
+          modalTitle.textContent=post.title;
+          modalBody.textContent=post.body;
+          modal.style.display='flex';
+        });
+      });
+    }
+
+    // search
+    document.getElementById('search').addEventListener('input', e=>{
+      const q=e.target.value.toLowerCase();
+      renderPosts(POSTS.filter(p=>p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q)));
+    });
+
+    document.getElementById('closeModal').addEventListener('click',()=>modal.style.display='none');
+    window.addEventListener('click',e=>{ if(e.target==modal) modal.style.display='none'; });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') modal.style.display='none'; });
+
+    renderPosts(POSTS);
+  </script>
+</body>
+</html>
